@@ -53,13 +53,13 @@ def add_hotel(
 
 @app.put("/hotels/{hotel_id}")
 def update_hotel(
-    hot_id: int = Body(embed=True),
+    hotel_id: int,
     title: str = Body(embed=True),
     name: str = Body(embed=True)
     ):
     global hotels
     for hotel in hotels:
-        if hotel['id'] == hot_id:
+        if hotel['id'] == hotel_id:
             hotel['title'] = title
             hotel['name'] = name
             return {"status": "OK"}
@@ -69,13 +69,13 @@ def update_hotel(
 
 @app.patch("/hotels/{hotel_id}")
 def patch_hotel(
-    hot_id: int = Body(embed=True),
+    hotel_id: int,
     title: str | None = Body(default=None, embed=True, strict=False),
     name: str | None = Body(default=None, embed=True, strict=False)
     ):
     global hotels
     for hotel in hotels:
-        if hotel["id"] == hot_id:
+        if hotel["id"] == hotel_id :
             if title:
                 hotel['title'] = title
             if name:
