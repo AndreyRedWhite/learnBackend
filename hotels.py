@@ -23,17 +23,27 @@ post_examples = {"1": {"summary": "Сочи", "value":
 @router.get(path="", summary='Get all the hotels', response_model=list[HotelSchema])
 def get_hotels(
     id: int | None = Query(default=None, description='ID отеля'),
-    title: str | None = Query(default=None, description='Название отеля')
+    title: str | None = Query(default=None, description='Название отеля'),
+    page: int | None = Query(default=1, description='Цифра страницы'),
+    per_page: int | None = Query(default=3, description='Количество отображаемых отелей')
     ):
-    hotels_ = []
+    filtered_hotels = []
     for hotel in hotels:
-        if id and hotel['id'] != id:
+        if id is not None and hotel['id'] != id:
             continue
-        if title and hotel['title'] != title:
+        if title is not None and hotel['title'] != title:
             continue
-        hotels_.append(hotel)
-    return hotels_
-    # return [hotel for hotel in hotels if hotel['title'] == title and hotel['id'] == id]
+        filtered_hotels.append(hotel)
+
+    # Пагинация
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+
+    # Проверка выхода за границы списка
+    if start_idx >= len(filtered_hotels):
+        return []
+
+    return filtered_hotels[start_idx:end_idx]
 
 
 @router.delete(path='/{hotel_id}', summary='Delete an particular hotel')
