@@ -1,15 +1,30 @@
-from fastapi import Query, Body, APIRouter
+from fastapi import Query, APIRouter, Body
 
-from schemas.hotels_schema import HotelData
+from schemas.hotels_schema import HotelSchema, HotelSchemaPatch
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
 
+hotels = [
+    {"id": 1, "title": "sochi", "name": "Sochi_Star"},
+    {"id": 2, "title": "dubai", "name": "Dubai_parus"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
+]
 
-@router.get(path="", summary='Get all the hotels')
+post_examples = {"1": {"summary": "Сочи", "value":
+    {"title": "hotel sochi", "name": "hot_sochi"}},
+                 "2": {"summary": "Дубай", "value":
+    {"title": "hotel dubai", "name": "Dubai super duper"}}}
+
+
+@router.get(path="", summary='Get all the hotels', response_model=list[HotelSchema])
 def get_hotels(
     id: int | None = Query(default=None, description='ID отеля'),
     title: str | None = Query(default=None, description='Название отеля')
-):
+    ):
     hotels_ = []
     for hotel in hotels:
         if id and hotel['id'] != id:
@@ -29,7 +44,7 @@ def delete_hotel(hotel_id: int):
 
 
 @router.post(path="", summary='Add new wonderful hotel')
-def add_hotel(data: HotelData):
+def add_hotel(data: HotelSchema = Body(openapi_examples=post_examples)):
     global hotels
     hotels.append({
         "id": hotels[-1]['id'] + 1,
@@ -41,7 +56,7 @@ def add_hotel(data: HotelData):
 
 @router.put(path="/{hotel_id}", summary='Update all the info about particular hotel')
 def update_hotel(
-    hotel_id: int, data: HotelData):
+    hotel_id: int, data: HotelSchema):
     global hotels
     for hotel in hotels:
         if hotel['id'] == hotel_id:
@@ -54,17 +69,14 @@ def update_hotel(
 
 @router.patch(path="/{hotel_id}", summary='Partially update an info about particular hotel')
 def patch_hotel(
-    hotel_id: int,
-    title: str | None = Body(default=None, embed=True, strict=False),
-    name: str | None = Body(default=None, embed=True, strict=False)
-    ):
+    hotel_id: int, data: HotelSchemaPatch):
     global hotels
     for hotel in hotels:
         if hotel["id"] == hotel_id:
-            if title:
-                hotel['title'] = title
-            if name:
-                hotel['name'] = name
+            if data.title:
+                hotel['title'] = data.title
+            if data.name:
+                hotel['name'] = data.name
             return {"status": "OK"}
         else:
             return {'status': 'bad parameter'}

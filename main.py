@@ -7,12 +7,6 @@ app = FastAPI()
 app.include_router(router=hotels_r)
 
 
-hotels = [
-    {"id": 1, "title": "sochi", "name": "Sochi_Star"},
-    {"id": 2, "title": "dubai", "name": "Dubai_parus"}
-]
-
-
 @app.get("/")
 def root():
     return "hello word"
@@ -37,7 +31,7 @@ async def get_sync(proc_id: int):
 
 
 def main():
-    uvicorn.run("main:app", reload=False)
+    uvicorn.run("main:app", reload=True)
 
 
 if __name__ == '__main__':
