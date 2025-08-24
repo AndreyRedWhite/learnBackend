@@ -1,7 +1,11 @@
-from fastapi import FastAPI, Query, Body
+from fastapi import FastAPI
 import uvicorn
 
+from hotels import router as hotels_r
+
 app = FastAPI()
+app.include_router(router=hotels_r)
+
 
 hotels = [
     {"id": 1, "title": "sochi", "name": "Sochi_Star"},
@@ -14,79 +18,26 @@ def root():
     return "hello word"
 
 
-@app.get("/hotels")
-def get_hotels(
-    id: int | None = Query(default=None, description='ID отеля'),
-    title: str | None = Query(default=None, description='Название отеля')
-):
-    hotels_ = []
-    for hotel in hotels:
-        if id and hotel['id'] != id:
-            continue
-        if title and hotel['title'] != title:
-            continue
-        hotels_.append(hotel)
-    return hotels_
-    # return [hotel for hotel in hotels if hotel['title'] == title and hotel['id'] == id]
+import time
+import asyncio
 
 
-@app.delete('/hotels/{hotel_id}')
-def delete_hotel(hotel_id: int):
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel['id'] != hotel_id]
-    return {'status': 'OK'}
+@app.get(path='/sync/{proc_id}')
+def get_sync(proc_id: int):
+    print(f"started working with: {proc_id}. time is: {time.time():.2f}")
+    time.sleep(2)
+    print(f'finished working with {proc_id}. time is: {time.time():.2f}')
 
 
-@app.post("/hotels")
-def add_hotel(
-    title: str = Body(embed=True),
-    name: str = Body(embed=True)
-    ):
-    global hotels
-    hotels.append({
-        "id": hotels[-1]['id'] + 1,
-        "title": title,
-        'name': name
-    })
-    return {'status': 'OK'}
-
-
-@app.put("/hotels/{hotel_id}")
-def update_hotel(
-    hotel_id: int,
-    title: str = Body(embed=True),
-    name: str = Body(embed=True)
-    ):
-    global hotels
-    for hotel in hotels:
-        if hotel['id'] == hotel_id:
-            hotel['title'] = title
-            hotel['name'] = name
-            return {"status": "OK"}
-        else:
-            return {'status': 'bad parameter'}
-
-
-@app.patch("/hotels/{hotel_id}")
-def patch_hotel(
-    hotel_id: int,
-    title: str | None = Body(default=None, embed=True, strict=False),
-    name: str | None = Body(default=None, embed=True, strict=False)
-    ):
-    global hotels
-    for hotel in hotels:
-        if hotel["id"] == hotel_id :
-            if title:
-                hotel['title'] = title
-            if name:
-                hotel['name'] = name
-            return {"status": "OK"}
-        else:
-            return {'status': 'bad parameter'}
+@app.get(path='/async/{proc_id}')
+async def get_sync(proc_id: int):
+    print(f"started working with: {proc_id}. time is: {time.time():.2f}")
+    await asyncio.sleep(2)
+    print(f'finished working with {proc_id}. time is: {time.time():.2f}')
 
 
 def main():
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("main:app", reload=False)
 
 
 if __name__ == '__main__':
