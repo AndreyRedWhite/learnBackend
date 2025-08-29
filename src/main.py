@@ -1,7 +1,12 @@
+import sys
+from pathlib import Path
+
 from fastapi import FastAPI
 import uvicorn
 
-from hotels import router as hotels_r
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.api.hotels import router as hotels_r
 
 app = FastAPI()
 app.include_router(router=hotels_r)
