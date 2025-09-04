@@ -141,3 +141,6 @@ cython_debug/
 *.DC_Store
 .DS_Store
 .idea
+
+pet_practice/*
+pet_practice
