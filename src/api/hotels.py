@@ -1,7 +1,12 @@
 from fastapi import Query, APIRouter, Body
 
+from sqlalchemy import insert
+
+from src.database import async_session_maker, engine
+from src.models.hotels import HotelsOrm
 from src.schemas.hotels import HotelSchema, HotelSchemaPatch
 from src.api.dependencies import PaginationDep
+
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
 
@@ -16,9 +21,9 @@ hotels = [
 ]
 
 post_examples = {"1": {"summary": "Сочи", "value":
-    {"title": "hotel sochi", "name": "hot_sochi"}},
+    {"title": "hotel sochi", "location": "Сочи, Ленина, 1"}},
                  "2": {"summary": "Дубай", "value":
-    {"title": "hotel dubai", "name": "Dubai super duper"}}}
+    {"title": "hotel dubai", "location": "Дубай, шейха 1"}}}
 
 
 @router.get(path="", summary='Get all the hotels', response_model=list[HotelSchema])
@@ -54,13 +59,12 @@ def delete_hotel(hotel_id: int):
 
 
 @router.post(path="", summary='Add new wonderful hotel')
-def add_hotel(data: HotelSchema = Body(openapi_examples=post_examples)):
-    global hotels
-    hotels.append({
-        "id": hotels[-1]['id'] + 1,
-        "title": data.title,
-        'name': data.name
-    })
+async def add_hotel(data: HotelSchema = Body(openapi_examples=post_examples)):
+    async with async_session_maker() as session:
+        add_hotel_stmt = insert(HotelsOrm).values(**data.model_dump())
+        print(add_hotel_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
+        await session.execute(add_hotel_stmt)
+        await session.commit()
     return {'status': 'OK'}
 
 
